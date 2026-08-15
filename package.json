@@ -10,7 +10,8 @@
     "lint": "tsc --noEmit",
     "test": "vitest run",
     "db:generate": "prisma generate --schema=./prisma/schema.prisma",
-    "db:migrate": "prisma migrate deploy --schema=./prisma/schema.prisma",
+    "db:migrate": "node scripts/db-migrate.mjs",
+    "db:migrate:strict": "prisma migrate deploy --schema=./prisma/schema.prisma",
     "db:seed": "tsx server/src/seed.ts"
   },
   "prisma": {

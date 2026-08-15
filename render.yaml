@@ -26,10 +26,16 @@ services:
         sync: false
       - key: ADMIN_PASSWORD
         sync: false
+      # Injected only for services created from this Blueprint. A service created
+      # manually in the dashboard will NOT receive it; db:migrate then skips
+      # migrations rather than failing the build.
       - key: DATABASE_URL
         fromDatabase:
           name: portfolio-postgres
           property: connectionString
+      # Flip to "true" once the API reads from PostgreSQL instead of the JSON store.
+      - key: DB_MIGRATE_STRICT
+        value: "false"
       - key: DATA_FILE
         value: /var/data/database.json
       - key: UPLOAD_DIR
