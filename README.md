@@ -49,9 +49,27 @@ npm run start        # serve API (and built UI with NODE_ENV=production)
 npm run lint         # strict TypeScript checks
 npm run test         # Vitest
 npm run db:generate  # generate Prisma Client from the explicit schema path
-npm run db:migrate   # deploy Prisma migrations from the explicit schema path
+npm run db:migrate   # deploy Prisma migrations (skipped when DATABASE_URL is unset)
+npm run db:migrate:strict  # raw `prisma migrate deploy`, always fails without DATABASE_URL
 npm run db:seed      # seed hook
 ```
+
+### About `db:migrate` and missing `DATABASE_URL`
+
+`npm run db:migrate` runs `scripts/db-migrate.mjs`, which deploys migrations only when a
+PostgreSQL `DATABASE_URL` is present. This keeps deploys working while the API still reads
+from the JSON repository in `server/src/store.ts`:
+
+| `DATABASE_URL` | Migration result | `DB_MIGRATE_STRICT` unset/false | `DB_MIGRATE_STRICT=true` |
+| --- | --- | --- | --- |
+| missing | not attempted | skip, build continues | build fails |
+| set | succeeds | build continues | build continues |
+| set | fails (unreachable) | warn, build continues | build fails |
+
+Raw `prisma migrate deploy` aborts with `P1012 Environment variable not found: DATABASE_URL`
+when the variable is absent, which previously failed the Render build even though the runtime
+never queried PostgreSQL. Set `DB_MIGRATE_STRICT=true` once the API is switched to Prisma
+Client so that a broken migration correctly blocks the deploy.
 
 ## PostgreSQL setup
 
