@@ -3,7 +3,7 @@ services:
     name: portfolio-cms-api
     runtime: node
     plan: starter
-    buildCommand: npm ci && npx prisma generate
+    buildCommand: npm ci --include=dev && npm run db:generate && npm run db:migrate && npm run build
     startCommand: npm run start
     healthCheckPath: /api/health
     autoDeploy: true

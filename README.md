@@ -48,7 +48,8 @@ npm run build        # type check and optimized client build
 npm run start        # serve API (and built UI with NODE_ENV=production)
 npm run lint         # strict TypeScript checks
 npm run test         # Vitest
-npm run db:migrate   # deploy Prisma migrations
+npm run db:generate  # generate Prisma Client from the explicit schema path
+npm run db:migrate   # deploy Prisma migrations from the explicit schema path
 npm run db:seed      # seed hook
 ```
 
