@@ -50,3 +50,57 @@ section[id],.about,.contact,.resume-public{scroll-margin-top:92px}
   .nav-drawer a svg{width:16px;color:var(--muted)}
   .nav-drawer .nav-cta{display:inline-flex;width:100%;justify-content:center;margin-top:8px;padding:13px 18px}
 }
+
+/* Intentional profile presentation: a soft, editorial portrait treatment that
+   keeps the photo connected to the hero instead of making it feel pasted on. */
+.hero.has-profile{padding-top:clamp(34px,6vh,72px)}
+.hero-visual.has-photo{min-height:520px;align-self:stretch;display:grid;place-items:center}
+.profile-stage{position:relative;isolation:isolate;width:min(100%,448px);min-height:520px;display:grid;place-items:center}
+.profile-stage::before{content:'';position:absolute;inset:8% 5%;z-index:-3;border-radius:50%;background:radial-gradient(circle at 50% 42%,color-mix(in srgb,var(--primary) 23%,transparent),transparent 58%),radial-gradient(circle at 66% 72%,color-mix(in srgb,var(--secondary) 17%,transparent),transparent 42%);filter:blur(10px)}
+.profile-stage::after{content:'';position:absolute;inset:4% 0;z-index:-2;opacity:.6;background-image:linear-gradient(color-mix(in srgb,var(--border) 42%,transparent) 1px,transparent 1px),linear-gradient(90deg,color-mix(in srgb,var(--border) 42%,transparent) 1px,transparent 1px);background-size:30px 30px;mask-image:radial-gradient(ellipse at center,#000 8%,transparent 70%);-webkit-mask-image:radial-gradient(ellipse at center,#000 8%,transparent 70%);pointer-events:none}
+.profile-halo{position:absolute;border-radius:50%;pointer-events:none;z-index:-1}
+.profile-halo.halo-primary{width:68%;aspect-ratio:1;top:14%;left:16%;border:1px solid color-mix(in srgb,var(--primary) 26%,transparent);box-shadow:0 0 0 18px color-mix(in srgb,var(--primary) 4%,transparent),0 0 80px color-mix(in srgb,var(--primary) 13%,transparent)}
+.profile-halo.halo-secondary{width:25%;aspect-ratio:1;right:7%;bottom:17%;background:color-mix(in srgb,var(--secondary) 19%,transparent);filter:blur(18px)}
+.profile-orbit{position:absolute;width:84%;aspect-ratio:1;border:1px solid color-mix(in srgb,var(--text) 13%,transparent);border-radius:50%;transform:rotate(-18deg);pointer-events:none}
+.profile-orbit::before{content:'';position:absolute;width:7px;height:7px;right:14%;top:12%;border-radius:50%;background:var(--secondary);box-shadow:0 0 0 6px color-mix(in srgb,var(--secondary) 13%,transparent),0 0 22px color-mix(in srgb,var(--secondary) 55%,transparent)}
+.profile-photo-shell{position:relative;z-index:2;width:min(74%,324px);aspect-ratio:4/5;overflow:hidden;border:1px solid color-mix(in srgb,var(--text) 18%,transparent);border-radius:48% 48% 26px 26px;background:linear-gradient(145deg,color-mix(in srgb,var(--primary) 35%,var(--surface)),var(--surface) 58%,color-mix(in srgb,var(--secondary) 12%,var(--background)));box-shadow:0 30px 75px #0008,0 0 0 10px color-mix(in srgb,var(--background) 42%,transparent);transform:rotate(1deg)}
+.profile-photo-shell::before{content:'';position:absolute;inset:9px;z-index:4;border:1px solid #ffffff1c;border-radius:inherit;pointer-events:none}
+.hero-visual.has-photo .profile-photo-shell .profile-photo{display:block;position:relative;inset:auto;z-index:1;width:100%;height:100%;border:0;border-radius:inherit;object-fit:cover;object-position:50% 18%;box-shadow:none;transform:none;filter:saturate(.92) contrast(1.04)}
+.profile-photo-wash{position:absolute;inset:0;z-index:2;background:linear-gradient(180deg,transparent 34%,color-mix(in srgb,var(--background) 5%,transparent) 52%,color-mix(in srgb,var(--background) 88%,transparent) 100%);pointer-events:none}
+.profile-caption{position:absolute;z-index:5;left:16px;right:16px;bottom:16px;display:flex;flex-direction:column;gap:2px;padding:12px 13px 11px;border:1px solid #ffffff1f;border-radius:14px;background:color-mix(in srgb,var(--surface) 72%,transparent);backdrop-filter:blur(14px);box-shadow:0 12px 28px #0005}
+.profile-caption-status{display:flex;align-items:center;gap:0;margin-bottom:5px;color:var(--secondary);font-size:8px;font-weight:700;letter-spacing:.85px;text-transform:uppercase;white-space:nowrap;overflow:hidden;text-overflow:ellipsis}
+.profile-caption-status .dot{width:5px;height:5px;flex:0 0 auto;margin-right:7px;box-shadow:0 0 0 4px color-mix(in srgb,var(--secondary) 12%,transparent)}
+.profile-caption strong{font:600 14px/1.3 Manrope;letter-spacing:-.2px}
+.profile-caption>span:last-child{color:color-mix(in srgb,var(--text) 66%,var(--muted));font-size:10px;white-space:nowrap;overflow:hidden;text-overflow:ellipsis}
+.profile-note,.profile-stamp{position:absolute;z-index:5;display:flex;align-items:center;gap:8px;border:1px solid color-mix(in srgb,var(--text) 15%,transparent);background:color-mix(in srgb,var(--surface) 70%,transparent);backdrop-filter:blur(12px);box-shadow:0 14px 32px #0004;color:var(--muted);font-size:9px;font-weight:700;letter-spacing:1.1px;text-transform:uppercase}
+.profile-note{top:19%;right:0;padding:9px 11px;border-radius:9px;transform:rotate(4deg)}
+.profile-note-dot{width:6px;height:6px;border-radius:50%;background:var(--primary);box-shadow:0 0 0 4px color-mix(in srgb,var(--primary) 14%,transparent)}
+.profile-stamp{left:0;bottom:17%;padding:9px 12px;border-radius:9px;letter-spacing:.4px;text-transform:none;font-weight:500}
+.profile-stamp svg{width:13px;height:13px;color:var(--secondary)}
+.hero-visual.has-photo .profile-photo-shell .profile-fallback{display:grid;place-items:center;align-content:center;gap:13px;background:radial-gradient(circle at 50% 32%,color-mix(in srgb,var(--primary) 32%,var(--surface)),var(--surface) 68%);color:var(--text)}
+.profile-fallback svg{width:54px;height:54px;color:var(--primary);opacity:.65}
+.profile-fallback strong{font:600 29px Manrope;letter-spacing:2px;color:var(--text)}
+:root[data-theme="light"] .profile-photo-shell{box-shadow:0 26px 65px #26314a25,0 0 0 10px color-mix(in srgb,var(--background) 56%,transparent)}
+:root[data-theme="light"] .profile-caption,:root[data-theme="light"] .profile-note,:root[data-theme="light"] .profile-stamp{box-shadow:0 12px 28px #26314a18;background:color-mix(in srgb,var(--surface) 82%,transparent)}
+
+@media(max-width:1000px) and (min-width:851px){.hero{gap:36px}.profile-stage{transform:scale(.9);transform-origin:center}}
+@media(max-width:850px){
+  .hero.has-profile{padding-top:clamp(28px,5vh,48px)}
+  .hero-visual.has-photo{display:grid;grid-row:1;align-self:auto;min-height:390px;margin-bottom:0}
+  .hero-visual.has-photo .profile-stage{width:min(100%,390px);min-height:380px}
+  .hero-visual.has-photo .profile-photo-shell{width:min(72vw,270px)}
+  .profile-note{top:13%;right:3%}
+  .profile-stamp{left:3%;bottom:13%}
+}
+@media(max-width:520px){
+  .hero-visual.has-photo{min-height:345px}
+  .hero-visual.has-photo .profile-stage{min-height:340px}
+  .hero-visual.has-photo .profile-photo-shell{width:min(68vw,238px);border-radius:44% 44% 22px 22px}
+  .profile-stage::after{background-size:24px 24px}
+  .profile-note,.profile-stamp{font-size:8px;padding:8px 9px}
+  .profile-note{top:12%;right:0}
+  .profile-stamp{left:0;bottom:11%}
+  .profile-caption{left:12px;right:12px;bottom:12px;padding:10px 11px}
+  .profile-caption strong{font-size:12px}
+  .profile-caption>span:last-child{font-size:9px}
+}
