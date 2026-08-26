@@ -15,7 +15,60 @@ const blank:Any={projects:{name:'',slug:'',shortDescription:'',fullDescription:'
 const labels:Any={projects:'Projects',skills:'Skills',experience:'Experience',education:'Education',certifications:'Certifications',services:'Services',testimonials:'Testimonials',posts:'Blog',media:'Media library',resumes:'Resume',messages:'Messages'};
 const darkDefaults={primary:'#7c6cf2',secondary:'#16c1a3',accent:'#f59e61',background:'#080a0f',surface:'#10131b',text:'#f3f4f8',muted:'#9ba3b4',border:'#242938'};const lightDefaults={primary:'#6656dc',secondary:'#078b78',accent:'#d66d32',background:'#f7f8fb',surface:'#ffffff',text:'#171923',muted:'#626b7c',border:'#dfe3eb'};const initials=(name:string)=>(name||'Portfolio').trim().split(/\s+/).slice(0,2).map(x=>x[0]).join('').toUpperCase();
 function Theme({settings}:{settings:Any}){useEffect(()=>{const t=settings?.theme||{};const media=matchMedia('(prefers-color-scheme: dark)');const apply=()=>{const effective=t.mode==='system'?(media.matches?'dark':'light'):(t.mode||'dark');const palette=effective==='light'?{...lightDefaults,...t.light}:{...darkDefaults,...t.dark};for(const [k,v] of Object.entries({...t,...palette}))if(typeof v!=='object')document.documentElement.style.setProperty('--'+k,String(v));document.documentElement.dataset.theme=effective;document.documentElement.style.colorScheme=effective};apply();media.addEventListener('change',apply);return()=>media.removeEventListener('change',apply)},[settings]);return null}
-function Public(){const[d,setD]=useState<Any>();const[form,setForm]=useState({name:'',email:'',subject:'',message:'',website:''});const[msg,setMsg]=useState('');const[error,setError]=useState('');const load=()=>{setD(undefined);setError('');loadPublicPortfolio().then(setD).catch((e:any)=>setError(e.message||'Unable to load your portfolio'))};useEffect(load,[]);if(error)return <ErrorState message={error} onRetry={load}/>;if(!d)return <Loading/>;const p=d.profile,s=d.settings;const grouped=d.skills.filter((x:Any)=>x.visible).reduce((a:Any,x:Any)=>((a[x.category]??=[]).push(x),a),{});return <><Theme settings={s}/><header className="nav"><Link to="/" className="brand"><span>{initials(p.name)}</span> {p.name}</Link><nav>{d.navigation.filter((x:Any)=>x.enabled).map((x:Any)=><a key={x.id} href={x.url}>{x.label}</a>)}</nav></header><main>
+function Navbar({profile,items}:{profile:Any,items:Any[]}){
+  const[open,setOpen]=useState(false),[scrolled,setScrolled]=useState(false),[active,setActive]=useState('');
+  const links=(items||[]).filter((x:Any)=>x.enabled).sort((a:Any,b:Any)=>(a.order||0)-(b.order||0));
+  const cta={label:profile.secondaryCta||"Let's talk",url:links.find((x:Any)=>/#contact/i.test(String(x.url)))?.url||'#contact'};
+  useEffect(()=>{
+    const onScroll=()=>{
+      setScrolled(window.scrollY>10);
+      let current='';
+      for(const x of links){
+        const id=String(x.url||'').replace(/^#/,'');
+        const el=id?document.getElementById(id):null;
+        if(el&&el.getBoundingClientRect().top<=120) current=x.url;
+      }
+      setActive(current);
+    };
+    const onResize=()=>{if(window.innerWidth>850)setOpen(false)};
+    onScroll();
+    addEventListener('scroll',onScroll,{passive:true});
+    addEventListener('resize',onResize);
+    return()=>{removeEventListener('scroll',onScroll);removeEventListener('resize',onResize)};
+  },[items]);
+  useEffect(()=>{
+    if(!open)return;
+    const onKey=(e:KeyboardEvent)=>{if(e.key==='Escape')setOpen(false)};
+    document.body.style.overflow='hidden';
+    addEventListener('keydown',onKey);
+    return()=>{document.body.style.overflow='';removeEventListener('keydown',onKey)};
+  },[open]);
+  const go=(e:React.MouseEvent,url:string)=>{
+    if(!url||/^https?:|^mailto:|^\/(?!#)/.test(url)){setOpen(false);return}
+    e.preventDefault();
+    setOpen(false);
+    const id=url.startsWith('#')?url:'#'+url;
+    const el=document.querySelector(id);
+    if(el){el.scrollIntoView({behavior:'smooth',block:'start'});history.replaceState(null,'',id)}
+    else location.hash=id;
+  };
+  return <header className={'nav'+(scrolled?' scrolled':'')+(open?' open':'')}>
+    <Link to="/" className="brand" onClick={()=>setOpen(false)}><span>{initials(profile.name)}</span> {profile.name}</Link>
+    <nav className="nav-links" aria-label="Primary">{links.map((x:Any)=><a key={x.id} href={x.url} className={active===x.url?'active':''} onClick={e=>go(e,x.url)}>{x.label}</a>)}</nav>
+    <div className="nav-actions">
+      <a className="nav-cta" href={cta.url} onClick={e=>go(e,cta.url)}>{cta.label}<I.ArrowUpRight size={14}/></a>
+      <button type="button" className="nav-toggle" aria-label={open?'Close navigation':'Open navigation'} aria-expanded={open} aria-controls="mobile-nav" onClick={()=>setOpen(v=>!v)}>{open?<I.X/>:<I.Menu/>}</button>
+    </div>
+    {open&&<>
+      <button type="button" className="nav-scrim" aria-label="Close navigation" onClick={()=>setOpen(false)}/>
+      <nav id="mobile-nav" className="nav-drawer" aria-label="Mobile">
+        {links.map((x:Any)=><a key={'m'+x.id} href={x.url} className={active===x.url?'active':''} onClick={e=>go(e,x.url)}><span>{x.label}</span><I.ArrowUpRight size={16}/></a>)}
+        <a className="nav-cta" href={cta.url} onClick={e=>go(e,cta.url)}>{profile.secondaryCta||cta.label}<I.Send size={15}/></a>
+      </nav>
+    </>}
+  </header>
+}
+function Public(){const[d,setD]=useState<Any>();const[form,setForm]=useState({name:'',email:'',subject:'',message:'',website:''});const[msg,setMsg]=useState('');const[error,setError]=useState('');const load=()=>{setD(undefined);setError('');loadPublicPortfolio().then(setD).catch((e:any)=>setError(e.message||'Unable to load your portfolio'))};useEffect(load,[]);if(error)return <ErrorState message={error} onRetry={load}/>;if(!d)return <Loading/>;const p=d.profile,s=d.settings;const grouped=d.skills.filter((x:Any)=>x.visible).reduce((a:Any,x:Any)=>((a[x.category]??=[]).push(x),a),{});return <><Theme settings={s}/><Navbar profile={p} items={d.navigation}/><main>
 <section className={`hero ${p.avatar?'has-profile':''}`}><div className="orb o1"/><div className="orb o2"/><motion.div initial={{opacity:0,y:20}} animate={{opacity:1,y:0}} className="hero-copy"><div className="eyebrow"><span className="dot"/>{p.heroBadge}</div><h1>Building digital systems that are <em>secure by design.</em></h1><p>{p.intro}</p><div className="actions"><a className="pill" href="#projects">{p.primaryCta}<I.ArrowDown size={16}/></a><a className="text-btn" href="#contact">{p.secondaryCta}<I.ArrowUpRight size={16}/></a>{d.resumes?.find((r:Any)=>r.active)&&<a className="text-btn resume-hero" href={asset(d.resumes.find((r:Any)=>r.active).url)} target="_blank" rel="noreferrer"><I.FileDown size={16}/>Resume</a>}</div><div className="metrics"><div><b>{p.years}+</b><span>Years engineering</span></div><div><b>{d.projects.length * 8}+</b><span>Products shipped</span></div><div><b>99.9%</b><span>Reliability mindset</span></div></div></motion.div><div className={`hero-visual ${p.avatar?'has-photo':''}`}>{p.avatar&&<img className="profile-photo" src={asset(p.avatar)} alt={`${p.name} profile`}/>}<div className="code-card"><div className="window"><i/><i/><i/></div><pre><span>const</span> engineer = {'{'}{`\n`}  craft: <b>'intentional'</b>,{`\n`}  systems: <b>'resilient'</b>,{`\n`}  security: <b>'built-in'</b>{`\n`}{'}'};</pre><div className="status"><I.ShieldCheck/> All systems operational</div></div></div></section>
 <section id="about" className="about"><div><span className="kicker">01 / About</span><h2>I turn hard problems into clear, dependable products.</h2></div><div><p>{p.bio}</p><div className="availability"><span className="dot"/><b>{p.availability}</b><small>{p.location}</small></div></div></section>
 <Section id="projects" num="02" title={s.sectionTitles.projects} sub="A collection of platforms, products, and security systems built for real-world scale."><ProjectShowcase projects={d.projects.filter((x:Any)=>x.published)}/></Section>
