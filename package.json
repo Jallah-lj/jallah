@@ -6,7 +6,9 @@
   "scripts": {
     "dev": "concurrently -n api,web -c blue,magenta \"tsx watch server/src/index.ts\" \"vite --host 0.0.0.0\"",
     "build": "node scripts/generate-public-data.mjs && tsc -b && vite build",
+    "build:server": "esbuild server/src/index.ts --bundle --platform=node --format=cjs --target=node22 --outfile=dist-server/index.cjs",
     "start": "tsx server/src/index.ts",
+    "start:prod": "node dist-server/index.cjs",
     "lint": "tsc --noEmit",
     "test": "vitest run",
     "db:generate": "prisma generate --schema=./prisma/schema.prisma",
@@ -43,6 +45,7 @@
     "@types/react-dom": "latest",
     "@vitejs/plugin-react": "latest",
     "concurrently": "9.2.4",
+    "esbuild": "^0.28.2",
     "prisma": "6.19.3",
     "tsx": "latest",
     "typescript": "latest",

@@ -1,0 +1,55 @@
+# $0/month self-hosted deployment (no PostgreSQL required).
+#
+# Runs the same image as Fly.io on any Docker host: an Oracle Cloud
+# Always Free ARM VM, a free-tier VPS, a home server, etc.
+#
+#   1. Install Docker:   https://docs.docker.com/engine/install/
+#   2. cp .env.example .env  and fill JWT_SECRET / ADMIN_PASSWORD
+#   3. docker compose up -d --build
+#   4. Site + CMS: http://<host>:8080
+#
+# For automatic HTTPS on a domain, uncomment the caddy service below and set
+# DOMAIN in your .env file (DNS A/AAAA record -> this machine first).
+
+services:
+  portfolio:
+    build: .
+    restart: unless-stopped
+    ports:
+      - "8080:4000"
+    environment:
+      NODE_ENV: production
+      SERVE_CLIENT: "true"
+      JWT_SECRET: ${JWT_SECRET:?Set JWT_SECRET (32+ random chars) in .env}
+      ADMIN_EMAIL: ${ADMIN_EMAIL:-admin@atlas.dev}
+      ADMIN_PASSWORD: ${ADMIN_PASSWORD:?Set ADMIN_PASSWORD in .env}
+      DATA_FILE: /var/data/database.json
+      UPLOAD_DIR: /var/data/uploads
+    volumes:
+      - cms-data:/var/data
+    healthcheck:
+      test: ["CMD", "node", "-e", "fetch('http://127.0.0.1:4000/api/health').then(r=>process.exit(r.ok?0:1)).catch(()=>process.exit(1))"]
+      interval: 30s
+      timeout: 5s
+      retries: 3
+      start_period: 15s
+
+  # Automatic HTTPS reverse proxy. Uncomment and set DOMAIN=portfolio.example.com
+  # caddy:
+  #   image: caddy:2-alpine
+  #   restart: unless-stopped
+  #   ports:
+  #     - "80:80"
+  #     - "443:443"
+  #   command: caddy reverse-proxy --from ${DOMAIN} --to portfolio:4000
+  #   depends_on:
+  #     portfolio:
+  #       condition: service_healthy
+  #   volumes:
+  #     - caddy-data:/data
+  #     - caddy-config:/config
+
+volumes:
+  cms-data:
+  # caddy-data:
+  # caddy-config:

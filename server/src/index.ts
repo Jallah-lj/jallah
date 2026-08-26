@@ -12,6 +12,7 @@ import { randomUUID } from 'node:crypto';
 import { z } from 'zod';
 import { db,resources,type Resource } from './store.ts';
 const app=express(), PORT=Number(process.env.PORT||4000), SECRET=process.env.JWT_SECRET||'local-development-secret-change-me';
+if(process.env.NODE_ENV==='production'&&!process.env.JWT_SECRET)console.warn('[security] JWT_SECRET is not set — using a PUBLIC development default. Anyone can forge an admin session. Set JWT_SECRET to 32+ random characters (e.g. `fly secrets set JWT_SECRET=...`).');
 // CLIENT_URL (Render env var, comma-separated) plus a hard-coded fallback so the
 // production Vercel deployment keeps working even if CLIENT_URL is unset/misspelled.
 const allowedOrigins=[...(process.env.CLIENT_URL||'http://localhost:5173').split(','),'https://my-portfolio-liart-theta-21.vercel.app'].map(x=>x.trim().replace(/\/$/,'')).filter(Boolean);
@@ -37,6 +38,11 @@ app.post('/api/auth/logout',(_req,res)=>res.clearCookie('session',{path:'/',same
 app.get('/api/auth/me',auth,(_req:any,res)=>{const u=db.get().user;res.json({ok:true,data:{email:u.email,role:u.role,name:u.name}})});
 app.put('/api/account',auth,async(req:any,res)=>{const schema=z.object({name:z.string().min(2).max(80),email:z.string().email(),currentPassword:z.string().min(8),newPassword:z.string().min(10).max(128).optional().or(z.literal(''))});const parsed=schema.safeParse(req.body);if(!parsed.success)return res.status(400).json({ok:false,error:'Please check the account fields'});const user=db.get().user;if(!await bcrypt.compare(parsed.data.currentPassword,user.passwordHash))return res.status(403).json({ok:false,error:'Current password is incorrect'});user.name=parsed.data.name.trim();user.email=parsed.data.email.toLowerCase();if(parsed.data.newPassword)user.passwordHash=await bcrypt.hash(parsed.data.newPassword,12);db.save();const token=jwt.sign({sub:user.id,email:user.email,role:user.role},SECRET,{expiresIn:'7d'});res.cookie('session',token,cookieOptions).json({ok:true,data:{name:user.name,email:user.email,role:user.role}})});
 app.get('/api/health',(_req,res)=>res.json({ok:true,status:'healthy',timestamp:new Date().toISOString()}));
+// One-click logical backup for volume-backed deployments (Fly.io, VPS, Railway):
+// download while logged in, or `curl -b cookies.txt` after a cookie-jar login.
+// The password hash is stripped; on restore the admin account is rebuilt from
+// ADMIN_EMAIL/ADMIN_PASSWORD, so keep those secrets available.
+app.get('/api/backup',auth,(_req:any,res)=>{const dump:any=db.get();const user=dump.user?{...dump.user}:null;if(user)delete user.passwordHash;res.setHeader('Content-Disposition','attachment; filename="portfolio-backup.json"');res.json({ok:true,generatedAt:new Date().toISOString(),data:{...dump,user}})});
 app.get('/api/public',(_req,res)=>res.json({ok:true,data:db.public()}));
 app.get('/api/dashboard',auth,(_req,res)=>{const d=db.get();res.json({ok:true,data:{counts:Object.fromEntries(resources.map(r=>[r,d[r].length])),recentMessages:d.messages.slice(0,4),activity:d.activity.slice(0,8)}})});
 app.get('/api/profile',auth,(_req,res)=>res.json({ok:true,data:db.get().profile}));app.put('/api/profile',auth,(req,res)=>res.json({ok:true,data:db.updateSingleton('profile',req.body)}));

@@ -21,9 +21,12 @@ server/src/         Express API, auth, validation, persistence
 prisma/             Normalized PostgreSQL schema
 uploads/            Local development media storage
 data/                Zero-configuration development data store
+Dockerfile          Production image: API + UI + volume-backed JSON store
+fly.toml            Fly.io deployment (~$2–4/mo, persistent volume, no DB)
+docker-compose.yml  Self-hosting ($0: Oracle Free Tier / VPS / home server)
 ```
 
-The included zero-configuration development adapter persists atomically to `data/database.json`, allowing the complete preview to run without infrastructure. The normalized Prisma/PostgreSQL schema is the production data contract. For a production deployment, provision PostgreSQL, set `DATABASE_URL`, run migrations, and connect the repository methods in `server/src/store.ts` to Prisma Client. Media metadata belongs in PostgreSQL; binaries use the storage adapter boundary (`uploads/` locally, S3/Cloudinary in production).
+The included zero-configuration development adapter persists atomically to `data/database.json`, allowing the complete preview to run without infrastructure. For a single-server production deployment **no database is required at all**: the same JSON store runs in production behind a persistent volume — see `DEPLOYMENT.md` for Fly.io (~$2–4/mo, `fly deploy`) and $0 self-hosting (`docker compose up`) recipes. If you later outgrow a single writer, the normalized Prisma/PostgreSQL schema is the production data contract: provision PostgreSQL, set `DATABASE_URL`, run migrations, and connect the repository methods in `server/src/store.ts` to Prisma Client. Media metadata belongs in PostgreSQL; binaries use the storage adapter boundary (`uploads/` locally, S3/Cloudinary in production).
 
 ## Quick start
 

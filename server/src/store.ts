@@ -25,7 +25,20 @@ const seed:any={
  testimonials:[{id:id(),name:'Maya Chen',position:'VP of Product',company:'Northstar',testimonial:'Alex brings rare depth across product, systems, and security. The result is software that is both elegant and genuinely resilient.',rating:5,published:true,order:1,createdAt:now(),updatedAt:now()}],
  posts:[{id:id(),title:'Designing secure systems without slowing teams down',slug:'secure-systems',excerpt:'A practical framework for making security a product capability.',content:'Security works best when it is part of everyday engineering decisions.',status:'published',published:true,readingTime:6,tags:['Security','Engineering'],createdAt:now(),updatedAt:now()}],media:[],resumes:[],messages:[],activity:[]
 };
-function load(){try{return JSON.parse(fs.readFileSync(file,'utf8'))}catch{fs.mkdirSync(path.dirname(file),{recursive:true});fs.writeFileSync(file,JSON.stringify(seed,null,2));return seed}}
+function load(){
+ try{
+  const parsed=JSON.parse(fs.readFileSync(file,'utf8'));
+  // Backups (e.g. from GET /api/backup) omit the password hash. When such a
+  // file is restored as DATA_FILE, rebuild only the admin user from the
+  // environment and keep every other record intact.
+  if(!parsed?.user?.passwordHash||!parsed?.user?.email){
+   parsed.user=seed.user;
+   fs.mkdirSync(path.dirname(file),{recursive:true});
+   fs.writeFileSync(file,JSON.stringify(parsed,null,2));
+  }
+  return parsed;
+ }catch{fs.mkdirSync(path.dirname(file),{recursive:true});fs.writeFileSync(file,JSON.stringify(seed,null,2));return seed}
+}
 let data=load();
 // Backward-compatible theme migration for existing installations.
 const legacy=data.settings?.theme||{};

@@ -1,0 +1,51 @@
+# Fly.io deployment — cheapest managed host with a persistent filesystem
+# (~$2-3/month total, no PostgreSQL or any other database to provision).
+#
+# First deploy:
+#   fly auth signup                  # card required; pay-as-you-go, no fixed plan
+#   fly launch --no-deploy           # picks an app name & region; keep this file's mounts
+#   fly secrets set JWT_SECRET=$(openssl rand -hex 32) \
+#                   ADMIN_EMAIL=you@example.com \
+#                   ADMIN_PASSWORD='a-strong-password' \
+#                   CLIENT_URL='https://<your-app>.fly.dev'
+#   fly deploy
+#   fly open
+#
+# Backups:
+#   fly ssh sftp shell   # then: get /var/data/database.json <local-name>.json
+# (or download a logical backup from the CMS: GET /api/backup while logged in)
+
+app = "atlas-portfolio-cms" # replace with your app name from `fly launch`
+primary_region = "jnb"      # Johannesburg (closest to Kigali); fra = Frankfurt, iad = US East
+
+[build]
+  docker = true
+
+[env]
+  NODE_ENV = "production"
+  SERVE_CLIENT = "true"
+  PORT = "4000"
+  DATA_FILE = "/var/data/database.json"
+  UPLOAD_DIR = "/var/data/uploads"
+
+# Persistent volume: CMS content + uploaded media survive deploys/restarts.
+# Keeps billing minimal: the machine sleeps when idle (volume is not billed
+# while stopped beyond storage) and wakes in ~1-2s on the next request.
+[[mounts]]
+  source = "cms_data"
+  destination = "/var/data"
+  initial_size = "1gb"
+
+[http_service]
+  internal_port = 4000
+  force_https = true
+  auto_stop_machines = "stop"
+  auto_start_machines = true
+  min_machines_running = 0
+  # For an always-on machine (~$2/mo with 256MB) use instead:
+  #   auto_stop_machines = "off"
+  #   min_machines_running = 1
+
+[[vm]]
+  size = "shared-cpu-1x"
+  memory = "256mb"
