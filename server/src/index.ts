@@ -29,7 +29,7 @@ app.set('trust proxy',1);
 // that preflights and error responses alike carry Access-Control-Allow-Origin.
 app.use(cors(corsOptions));app.options(/.*/,cors(corsOptions));
 app.use(helmet({crossOriginResourcePolicy:{policy:'cross-origin'}}));
-app.use(express.json({limit:'1mb'}));app.use(cookieParser());app.use('/uploads',express.static(path.resolve('uploads'),{maxAge:'7d'}));
+app.use(express.json({limit:'1mb'}));app.use(cookieParser());app.use('/uploads',express.static(path.resolve(process.env.UPLOAD_DIR||'uploads'),{maxAge:'7d'}));
 const auth=(req:any,res:any,next:any)=>{try{req.user=jwt.verify(req.cookies.session,SECRET);next()}catch{return res.status(401).json({ok:false,error:'Authentication required'})}};
 const loginLimit=rateLimit({windowMs:15*60_000,limit:10,standardHeaders:true,legacyHeaders:false});
 app.post('/api/auth/login',loginLimit,async(req,res)=>{const parsed=z.object({email:z.string().email(),password:z.string().min(8)}).safeParse(req.body);if(!parsed.success)return res.status(400).json({ok:false,error:'Enter a valid email and password'});const user=db.get().user; if(parsed.data.email.toLowerCase()!==user.email.toLowerCase()||!await bcrypt.compare(parsed.data.password,user.passwordHash))return res.status(401).json({ok:false,error:'Invalid email or password'});const token=jwt.sign({sub:user.id,email:user.email,role:user.role},SECRET,{expiresIn:'7d'});res.cookie('session',token,cookieOptions).json({ok:true,data:{name:user.name,email:user.email}})});

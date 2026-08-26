@@ -2,13 +2,19 @@ services:
   - type: web
     name: portfolio-cms-api
     runtime: node
-    plan: free
-    # The API persists everything in a JSON file store (server/src/store.ts);
-    # Prisma/Postgres is not used at runtime, so no database or migrate step.
+    # Persistent disks require a paid instance (Starter ~$7/mo). To deploy on
+    # the free plan for testing, set plan: free and delete the `disk:` block —
+    # but then DATA_FILE/UPLOAD_DIR live on the ephemeral container filesystem
+    # and ALL CMS content + uploaded media reset on every deploy/restart.
+    plan: starter
     buildCommand: npm ci --include=dev
     startCommand: npm run start
     healthCheckPath: /api/health
     autoDeploy: true
+    disk:
+      name: cms-data
+      mountPath: /var/data
+      sizeGB: 1
     envVars:
       - key: NODE_ENV
         value: production
@@ -22,7 +28,9 @@ services:
         sync: false
       - key: ADMIN_PASSWORD
         sync: false
+      # Both live on the persistent disk mounted at /var/data so data and
+      # uploads survive deploys and restarts.
       - key: DATA_FILE
-        value: data/database.json
+        value: /var/data/database.json
       - key: UPLOAD_DIR
-        value: uploads
+        value: /var/data/uploads
