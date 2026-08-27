@@ -5,25 +5,26 @@ A premium, responsive developer portfolio and authenticated content management d
 ## Highlights
 
 - Responsive public portfolio with projects, skills, experience, services, testimonials, and contact
-- Secure email/password admin login (bcrypt, signed HttpOnly JWT cookie, SameSite protection)
+- Admin login backed by Supabase Auth (signed HttpOnly JWT cookie)
 - CRUD editors for projects, skills, experience, education, certifications, services, testimonials, articles, resumes, and messages
-- Media library with image/PDF validation, 5 MB limits, preview, and deletion
+- Media library with image/PDF validation, 4.5 MB limits, preview, and deletion (Supabase Storage)
 - Persistent appearance editor using live CSS design tokens
 - Rate-limited contact form and login; Helmet security headers; Zod server validation
 - Search, status labels, confirmations, empty/loading/error states, and activity log
-- Normalized production PostgreSQL data model in `prisma/schema.prisma`
+- Content persisted as JSONB documents in Supabase Postgres via Prisma
 
 ## Architecture
 
 ```text
 client/             React + TypeScript + Vite UI
-server/src/         Express API, auth, validation, persistence
-prisma/             Normalized PostgreSQL schema
-uploads/            Local development media storage
-data/                Zero-configuration development data store
+server/src/         Express API, auth, validation, persistence (app.ts + store.ts)
+api/index.ts        Vercel serverless entry — mounts the Express app for /api/*
+prisma/             Prisma schema + migrations (CmsDocument JSONB store)
+uploads/            Local development media storage (fallback when Supabase is unset)
+data/               Legacy JSON data — import with npm run migrate:json
 ```
 
-The included zero-configuration development adapter persists atomically to `data/database.json`, allowing the complete preview to run without infrastructure. The normalized Prisma/PostgreSQL schema is the production data contract. For a production deployment, provision PostgreSQL, set `DATABASE_URL`, run migrations, and connect the repository methods in `server/src/store.ts` to Prisma Client. Media metadata belongs in PostgreSQL; binaries use the storage adapter boundary (`uploads/` locally, S3/Cloudinary in production).
+Each CMS collection (profile, settings, projects, …) is one JSONB document in Supabase Postgres, read and written through Prisma (`server/src/store.ts`). This keeps the exact JSON shapes the admin UI uses while making the data durable and SQL-queryable. Authentication delegates credential checks to Supabase Auth; uploads go to a public Supabase Storage bucket. Without Supabase keys the API falls back to local dev modes (env-var login, `uploads/` disk) so the UI can run without infrastructure.
 
 ## Quick start
 
@@ -33,12 +34,7 @@ npm install
 npm run dev
 ```
 
-Open `http://localhost:5173`. Default local-only credentials (change before deployment):
-
-- Email: `admin@atlas.dev`
-- Password: `ChangeMe123!`
-
-Environment credentials are read when the development data store is created. Delete `data/database.json` to reseed after changing them.
+Open `http://localhost:5173`. Local login (when Supabase keys are absent) uses the `ADMIN_EMAIL` / `ADMIN_PASSWORD` values from `.env`. With Supabase configured, the same credentials are verified by Supabase Auth instead.
 
 ## Commands
 
@@ -50,92 +46,41 @@ npm run lint         # strict TypeScript checks
 npm run test         # Vitest
 npm run db:generate  # generate Prisma Client from the explicit schema path
 npm run db:migrate   # deploy Prisma migrations from the explicit schema path
-npm run db:seed      # seed hook
+npm run db:seed      # seed content, storage bucket, and Supabase Auth admin
+npm run migrate:json # one-time import of legacy data/database.json + uploads/
 ```
 
-## PostgreSQL setup
+## Database setup
 
-1. Create a PostgreSQL 15+ database.
-2. Set `DATABASE_URL` in `.env`.
-3. Install/generate the Prisma client for your chosen Prisma version.
-4. During development run `npx prisma migrate dev --name init`; in production run `npm run db:migrate`.
-5. Use a least-privilege database account and TLS in production.
+The production database is Supabase Postgres:
 
-The schema includes unique constraints, cascade/set-null behavior, relationship tables, and indexes for publication, ordering, message state, and activity.
+1. Create a Supabase project and copy the credentials (see `.env.example` and `DEPLOYMENT.md`).
+2. `npm run db:migrate` — creates the `CmsDocument` table.
+3. `npm run db:seed` — seeds default content, the public `media` storage bucket, and the Supabase Auth administrator.
+
+Local development can point `DATABASE_URL`/`DIRECT_URL` at any PostgreSQL 15+ instance instead.
 
 ## Production checklist
 
 - Set a random 32+ character `JWT_SECRET` and strong admin password.
 - Serve behind TLS; secure cookies turn on with `NODE_ENV=production`.
 - Restrict `CLIENT_URL` to the canonical HTTPS origin.
-- Replace local uploads with an S3-compatible implementation; use signed URLs and malware scanning.
-- Back up PostgreSQL and object storage; configure retention and monitoring.
-- Add an external reverse-proxy rate limiter and transactional email provider.
+- Keep the `service_role` key server-side only; never prefix it with `VITE_`.
+- Back up Supabase (automated daily backups on paid plans) and review Storage usage.
 - Run dependency, SAST, authorization, upload, and browser accessibility tests in CI.
 
 ## Authentication and security
 
-Passwords are bcrypt-hashed and never returned. Sessions are seven-day signed JWTs in HttpOnly, SameSite=Strict cookies. Admin routes enforce authorization middleware. Helmet, CORS allowlisting, request-size limits, rate limits, ORM-safe schema design, MIME validation, randomized upload names, generic errors, and honeypot spam defense are included. For multi-admin/high-risk deployments, add server-side session revocation, CSRF tokens, MFA, password reset, account lockout, and an audit sink.
+Credentials are verified by Supabase Auth (bcrypt-hashed there); the API then issues seven-day signed JWTs in HttpOnly cookies. Admin routes enforce authorization middleware. Helmet, CORS allowlisting, request-size limits, rate limits, MIME validation, randomized upload names, generic errors, and honeypot spam defense are included. For multi-admin/high-risk deployments, add server-side session revocation, CSRF tokens, MFA, password reset, account lockout, and an audit sink.
 
 ## Media storage
 
-`POST /api/upload` accepts JPEG, PNG, WEBP, GIF, and PDF up to 5 MB. Files are stored outside the database and only metadata/URLs are persisted. `UPLOAD_DIR` selects local storage. The service boundary is intentionally small so the disk writer can be swapped for S3, R2, MinIO, or Cloudinary without changing UI forms.
+`POST /api/upload` accepts JPEG, PNG, WEBP, GIF, and PDF up to 4.5 MB (Vercel's request-body limit). Files are stored in the public Supabase Storage bucket `media` and only metadata/URLs are persisted in the database. Without Supabase keys, uploads fall back to the local `uploads/` directory for development.
 
 ## Deployment
 
-Build with `npm run build`, set production environment variables, migrate PostgreSQL, then run `NODE_ENV=production npm start`. Put the process behind Nginx, Caddy, a managed container ingress, or a platform load balancer. Persist object storage externally; never rely on an ephemeral container filesystem.
+Everything runs on **Supabase + Vercel**: the Express API is deployed as a Vercel serverless function (`api/index.ts` + `vercel.json`), content lives in Supabase Postgres, auth in Supabase Auth, and media in Supabase Storage. The public navigation intentionally contains no admin link — the owner can sign in at `/login`.
 
-## Deployment (Render Web Service + Vercel or Full-Stack)
-
-The public navigation intentionally contains no admin link. The owner can still sign in at `/login`. See `DEPLOYMENT.md` for full step-by-step instructions.
-
-### 1. Deploy as a Render Web Service (Manual setup without Blueprint)
-
-Push the repository to GitHub/GitLab, choose **New + → Web Service** in Render, and select the repository.
-
-**Web Service Settings:**
-- **Runtime**: `Node`
-- **Build Command**: `npm ci --include=dev` *(or `npm ci --include=dev && npm run build` if serving full-stack)*
-- **Start Command**: `npm run start`
-- **Health Check Path**: `/api/health`
-- **Persistent Disk** *(Starter plan ~$7/mo)*: Name `cms-data`, Mount Path `/var/data`, Size `1 GB`
-
-**Environment Variables:**
-```env
-NODE_ENV=production
-CLIENT_URL=https://your-portfolio.vercel.app
-SERVER_URL=https://your-api.onrender.com
-ADMIN_EMAIL=your-private-admin@example.com
-ADMIN_PASSWORD=use-a-long-unique-password
-JWT_SECRET=replace-with-at-least-32-random-characters
-DATA_FILE=/var/data/database.json
-UPLOAD_DIR=/var/data/uploads
-```
-
-*Note: On the Free tier without a persistent disk, set `DATA_FILE=data/database.json` and `UPLOAD_DIR=uploads` (ephemeral).*
-
-### 2. Deploy the frontend to Vercel
-
-Import the same repository in Vercel. The root `vercel.json` supplies the Vite build and SPA route fallback. Add this production environment variable:
-
-```env
-VITE_API_URL=https://your-api.onrender.com
-```
-
-Do not include a trailing slash. Deploy again after changing a Vite environment variable because it is embedded at build time.
-
-### 3. Complete the origin allowlist
-
-Once Vercel gives you the final URL, copy it into Render's `CLIENT_URL` in the Environment tab and save. Authentication uses a Secure, HttpOnly, `SameSite=None` cookie for the cross-origin Vercel/Render arrangement.
-
-Verify:
-
-```text
-https://your-api.onrender.com/api/health
-https://your-portfolio.vercel.app
-https://your-portfolio.vercel.app/login
-```
-
-For private browsing configurations that block all third-party cookies, use custom domains under the same parent domain or proxy `/api` through the frontend domain.
+See **`DEPLOYMENT.md`** for the full step-by-step guide (Supabase setup, Vercel import, environment variables, migrating legacy data, and troubleshooting).
 
 > Current storage note: the deployed runtime continues to use the persistent JSON repository on the Render disk until the Prisma repository milestone is completed. The PostgreSQL schema and service are provisioned, but migration alone does not switch the API repository.
