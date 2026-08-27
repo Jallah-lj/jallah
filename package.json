@@ -5,19 +5,22 @@
   "type": "module",
   "scripts": {
     "dev": "concurrently -n api,web -c blue,magenta \"tsx watch server/src/index.ts\" \"vite --host 0.0.0.0\"",
-    "build": "node scripts/generate-public-data.mjs && tsc -b && vite build",
+    "build": "tsx scripts/generate-public-data.ts && tsc -b && vite build",
     "start": "tsx server/src/index.ts",
     "lint": "tsc --noEmit",
-    "test": "vitest run",
+    "test": "vitest run --passWithNoTests",
+    "postinstall": "prisma generate --schema=./prisma/schema.prisma",
     "db:generate": "prisma generate --schema=./prisma/schema.prisma",
     "db:migrate": "prisma migrate deploy --schema=./prisma/schema.prisma",
-    "db:seed": "tsx server/src/seed.ts"
+    "db:seed": "tsx server/src/seed.ts",
+    "migrate:json": "tsx scripts/migrate-json.ts"
   },
   "prisma": {
     "schema": "./prisma/schema.prisma"
   },
   "dependencies": {
     "@prisma/client": "6.19.3",
+    "@supabase/supabase-js": "^2.112.4",
     "bcryptjs": "latest",
     "cookie-parser": "latest",
     "cors": "latest",
