@@ -3,11 +3,11 @@
     "id": "cc9672dd-ae67-42c2-97f6-5899efb3f2f0",
     "email": "admin@atlas.dev",
     "passwordHash": "$2b$12$qtdCqwH2olEv6vmLJqWX2uNTOABbk9Fnw2S.Qwdk3MAnCOfAVT34C",
-    "name": "Portfolio Owner",
+    "name": "Jallah Lawuobah",
     "role": "ADMIN"
   },
   "profile": {
-    "name": "Portfolio Owner",
+    "name": "Jallah Lawuobah",
     "title": "Senior Software & Security Engineer",
     "intro": "I architect resilient digital products at the intersection of thoughtful design, cloud engineering, and application security.",
     "bio": "For more than eight years, I have helped ambitious teams transform complex requirements into secure, elegant software. My work spans product engineering, distributed systems, cloud infrastructure, and offensive security.",
@@ -21,13 +21,13 @@
     "secondaryCta": "Let’s talk",
     "avatar": "",
     "socials": {
-      "github": "https://github.com",
+      "github": "https://github.com/Jallah-lj",
       "linkedin": "https://linkedin.com",
       "twitter": "https://x.com"
     }
   },
   "settings": {
-    "siteTitle": "Developer Portfolio",
+    "siteTitle": "Jallah Lawuobah — Senior Software & Security Engineer",
     "metaDescription": "Portfolio of a senior software and security engineer.",
     "sectionTitles": {
       "projects": "Selected work",
@@ -39,39 +39,39 @@
     },
     "footerText": "Designed and engineered with intention.",
     "theme": {
-      "mode": "dark",
-      "primary": "#7c6cf2",
-      "secondary": "#16c1a3",
-      "accent": "#f59e61",
-      "background": "#080a0f",
-      "surface": "#10131b",
-      "text": "#f3f4f8",
-      "muted": "#9ba3b4",
-      "border": "#242938",
-      "radius": 18,
+      "mode": "light",
+      "primary": "#1b3d6f",
+      "secondary": "#2f5d50",
+      "accent": "#8a5a2b",
+      "background": "#faf8f4",
+      "surface": "#ffffff",
+      "text": "#14161a",
+      "muted": "#5e5a52",
+      "border": "#e4ded3",
+      "radius": 12,
       "fontScale": 1,
       "container": 1180,
       "spacing": 96,
       "animation": "medium",
       "dark": {
-        "primary": "#7c6cf2",
-        "secondary": "#16c1a3",
-        "accent": "#f59e61",
-        "background": "#080a0f",
-        "surface": "#10131b",
-        "text": "#f3f4f8",
-        "muted": "#9ba3b4",
-        "border": "#242938"
+        "primary": "#3a6bb0",
+        "secondary": "#3e8c77",
+        "accent": "#c08a45",
+        "background": "#0f1114",
+        "surface": "#171a1f",
+        "text": "#ece8e1",
+        "muted": "#9b978f",
+        "border": "#272b32"
       },
       "light": {
-        "primary": "#6656dc",
-        "secondary": "#078b78",
-        "accent": "#d66d32",
-        "background": "#f7f8fb",
+        "primary": "#1b3d6f",
+        "secondary": "#2f5d50",
+        "accent": "#8a5a2b",
+        "background": "#faf8f4",
         "surface": "#ffffff",
-        "text": "#171923",
-        "muted": "#626b7c",
-        "border": "#dfe3eb"
+        "text": "#14161a",
+        "muted": "#5e5a52",
+        "border": "#e4ded3"
       }
     }
   },
@@ -405,7 +405,7 @@
       "name": "Maya Chen",
       "position": "VP of Product",
       "company": "Northstar",
-      "testimonial": "Alex brings rare depth across product, systems, and security. The result is software that is both elegant and genuinely resilient.",
+      "testimonial": "Jallah brings rare depth across product, systems, and security. The result is software that is both elegant and genuinely resilient.",
       "rating": 5,
       "published": true,
       "order": 1,

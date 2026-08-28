@@ -47,6 +47,7 @@ npm run test         # Vitest
 npm run db:generate  # generate Prisma Client from the explicit schema path
 npm run db:migrate   # deploy Prisma migrations from the explicit schema path
 npm run db:seed      # seed content, storage bucket, and Supabase Auth admin
+npm run theme:apply  # one-off: push the default palette to an existing database
 npm run migrate:json # one-time import of legacy data/database.json + uploads/
 ```
 
