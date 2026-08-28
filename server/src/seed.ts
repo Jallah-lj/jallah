@@ -48,7 +48,7 @@ async function main() {
           email,
           password,
           email_confirm: true,
-          user_metadata: { name: 'Portfolio Owner' },
+          user_metadata: { name: 'Jallah Lawuobah' },
         });
         console.log(error ? `! Could not create auth user: ${error.message}` : `✓ Created Supabase Auth administrator ${email}`);
       }

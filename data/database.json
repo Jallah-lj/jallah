@@ -3,11 +3,11 @@
     "id": "cc9672dd-ae67-42c2-97f6-5899efb3f2f0",
     "email": "admin@atlas.dev",
     "passwordHash": "$2b$12$qtdCqwH2olEv6vmLJqWX2uNTOABbk9Fnw2S.Qwdk3MAnCOfAVT34C",
-    "name": "Portfolio Owner",
+    "name": "Jallah Lawuobah",
     "role": "ADMIN"
   },
   "profile": {
-    "name": "Portfolio Owner",
+    "name": "Jallah Lawuobah",
     "title": "Senior Software & Security Engineer",
     "intro": "I architect resilient digital products at the intersection of thoughtful design, cloud engineering, and application security.",
     "bio": "For more than eight years, I have helped ambitious teams transform complex requirements into secure, elegant software. My work spans product engineering, distributed systems, cloud infrastructure, and offensive security.",
@@ -21,13 +21,13 @@
     "secondaryCta": "Let’s talk",
     "avatar": "",
     "socials": {
-      "github": "https://github.com",
+      "github": "https://github.com/Jallah-lj",
       "linkedin": "https://linkedin.com",
       "twitter": "https://x.com"
     }
   },
   "settings": {
-    "siteTitle": "Developer Portfolio",
+    "siteTitle": "Jallah Lawuobah — Senior Software & Security Engineer",
     "metaDescription": "Portfolio of a senior software and security engineer.",
     "sectionTitles": {
       "projects": "Selected work",
@@ -405,7 +405,7 @@
       "name": "Maya Chen",
       "position": "VP of Product",
       "company": "Northstar",
-      "testimonial": "Alex brings rare depth across product, systems, and security. The result is software that is both elegant and genuinely resilient.",
+      "testimonial": "Jallah brings rare depth across product, systems, and security. The result is software that is both elegant and genuinely resilient.",
       "rating": 5,
       "published": true,
       "order": 1,

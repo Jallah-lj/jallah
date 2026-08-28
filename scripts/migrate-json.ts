@@ -75,7 +75,7 @@ async function main() {
     let value = data[key];
     if (key === 'user') {
       // Credentials now live in Supabase Auth — keep profile info only.
-      value = { id: 'admin', email: value.email ?? process.env.ADMIN_EMAIL, name: value.name || 'Portfolio Owner', role: value.role || 'ADMIN' };
+      value = { id: 'admin', email: value.email ?? process.env.ADMIN_EMAIL, name: value.name || 'Jallah Lawuobah', role: value.role || 'ADMIN' };
     }
     await writeDocument(key, value);
     console.log(`✓ migrated collection "${key}"`);
