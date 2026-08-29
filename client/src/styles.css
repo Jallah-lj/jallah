@@ -115,3 +115,29 @@ section[id],.about,.contact,.resume-public{scroll-margin-top:92px}
 :root[data-theme="dark"]{color-scheme:dark}
 :root[data-theme="dark"] .contact a,:root[data-theme="dark"] .project-body span,:root[data-theme="dark"] .timeline article>div:nth-child(2)>span{color:color-mix(in srgb,var(--primary) 55%,#ffffff)}
 :root[data-theme="dark"] .mock{background:color-mix(in srgb,var(--surface) 88%,transparent)}
+
+/* Hero — animated "what I can do" headline (rotating word + caret) */
+.hero h1 .rotating{position:relative;display:inline-grid;grid-template-columns:1fr;vertical-align:baseline}
+.hero h1 .rotating>em,.hero h1 .rotating .rotating-sizer{grid-area:1/1;white-space:nowrap}
+.hero h1 .rotating>em{font-style:normal;color:var(--primary)}
+.hero h1 .rotating .rotating-sizer{visibility:hidden}
+.caret{display:inline-block;width:.055em;height:.78em;margin-left:.13em;border-radius:2px;background:var(--primary);vertical-align:-.02em;animation:caret-blink 1.15s steps(2,start) infinite}
+@keyframes caret-blink{50%{opacity:0}}
+
+/* Admin — messages: click row to read (marks as read) */
+tr.message-row{cursor:pointer}
+tr.message-row:hover td{background:#151a23}
+tr.message-row:focus-visible{outline:2px solid var(--primary);outline-offset:-2px}
+tr.message-row.unread .item-cell b{color:#fff}
+.unread-dot{display:inline-block;width:7px;height:7px;border-radius:50%;background:#f59e61;margin-left:8px;vertical-align:1px;box-shadow:0 0 0 3px #f59e6126}
+.badge.off{background:#e94d4d1f;color:#ff9a9a}
+
+/* Admin — read-only message viewer */
+.message-modal{width:min(680px,100%)}
+.message-meta{display:flex;flex-wrap:wrap;gap:8px;margin-bottom:16px}
+.message-meta span{display:inline-flex;align-items:center;gap:6px;font-size:10px;color:#9aa3b3;background:#0d1016;border:1px solid #252b37;border-radius:7px;padding:6px 10px}
+.message-meta svg{width:12px;color:var(--primary)}
+.message-meta a{color:#9aa3b3;font-weight:600}
+.message-meta a:hover{color:#fff}
+.message-body{background:#0d1016;border:1px solid #252b37;border-radius:10px;padding:18px;font-size:12px;line-height:1.75;color:#dfe3eb;white-space:pre-wrap;word-break:break-word}
+.message-modal .modal-actions a.primary{padding:9px 14px;font-size:12px}
