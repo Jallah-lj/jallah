@@ -7,7 +7,7 @@
     "dev": "concurrently -n api,web -c blue,magenta \"tsx watch server/src/index.ts\" \"vite --host 0.0.0.0\"",
     "build": "prisma generate --schema=./prisma/schema.prisma && tsx scripts/generate-public-data.ts && tsc -b && vite build",
     "start": "tsx server/src/index.ts",
-    "lint": "tsc --noEmit",
+    "lint": "tsc -b",
     "test": "vitest run --passWithNoTests",
     "postinstall": "prisma generate --schema=./prisma/schema.prisma",
     "db:generate": "prisma generate --schema=./prisma/schema.prisma",

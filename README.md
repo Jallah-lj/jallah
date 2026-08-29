@@ -84,4 +84,7 @@ Everything runs on **Supabase + Vercel**: the Express API is deployed as a Verce
 
 See **`DEPLOYMENT.md`** for the full step-by-step guide (Supabase setup, Vercel import, environment variables, migrating legacy data, and troubleshooting).
 
-> Current storage note: the deployed runtime continues to use the persistent JSON repository on the Render disk until the Prisma repository milestone is completed. The PostgreSQL schema and service are provisioned, but migration alone does not switch the API repository.
+### Runtime data flow
+
+- **Admin CMS** reads and writes live content in Supabase Postgres through Prisma (`server/src/store.ts`). No filesystem persistence is used in production — Vercel's function filesystem is ephemeral, so all CMS state lives in the database.
+- **Public portfolio** reads live data from the same API. As a resilience fallback, the build (via `scripts/generate-public-data.ts`) emits `client/public/portfolio.json` — a snapshot of the latest public content (excluding `user`, `messages`, and `activity`). If the API is unreachable at runtime, the site renders this snapshot instead of failing, and the snapshot is regenerated on every deploy.
