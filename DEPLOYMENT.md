@@ -101,6 +101,23 @@ Add the domain in **Vercel → Settings → Domains**, then set `CLIENT_URL=http
 
 ---
 
+### 5. Build notes (Prisma client + npm install scripts)
+
+The API serverless function imports `PrismaClient`, so the client **must** be generated during the build — otherwise `tsc -b` fails with:
+
+```text
+server/src/store.ts(1,10): error TS2305: Module '"@prisma/client"' has no exported member 'PrismaClient'.
+```
+
+Two independent safeguards cover this:
+
+- `build` runs `prisma generate` explicitly (does not rely on `postinstall`).
+- `allowScripts` in `package.json` approves the install scripts of `prisma`, `@prisma/client`, `@prisma/engines` and `esbuild`. npm 11.16+ only warns about unreviewed dependency scripts, but npm 12 **blocks** them by default; without those approvals `prisma generate` has to download engine binaries from `binaries.prisma.sh` on every build, and the deploy fails outright if that download is unavailable.
+
+If a new dependency ships an install script, review it with `npm approve-scripts --allow-scripts-pending` and commit the updated `package.json`.
+
+---
+
 ## Migrating existing content (from Render or a JSON install)
 
 If you have live data in `data/database.json` (e.g. downloaded from a Render deployment) and files in `uploads/`:
