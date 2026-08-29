@@ -21,9 +21,9 @@ import multer from 'multer';
 import path from 'node:path';
 import fs from 'node:fs';
 import { randomUUID } from 'node:crypto';
-import { z } from 'zod';
 import { createClient } from '@supabase/supabase-js';
 import { db, resources, type Resource } from './store.ts';
+import { loginSchema, accountSchema, contactSchema } from './validation.ts';
 
 export const app = express();
 const SECRET = process.env.JWT_SECRET || 'local-development-secret-change-me';
@@ -85,7 +85,7 @@ const wrap = (fn: Handler) => (req: any, res: any, next: any) => Promise.resolve
 const loginLimit = rateLimit({ windowMs: 15 * 60_000, limit: 10, standardHeaders: true, legacyHeaders: false });
 
 app.post('/api/auth/login', loginLimit, wrap(async (req, res) => {
-  const parsed = z.object({ email: z.string().email(), password: z.string().min(8) }).safeParse(req.body);
+  const parsed = loginSchema.safeParse(req.body);
   if (!parsed.success) return res.status(400).json({ ok: false, error: 'Enter a valid email and password' });
   const { email, password } = parsed.data;
   const user = await db.getUser();
@@ -115,8 +115,7 @@ app.get('/api/auth/me', auth, wrap(async (_req: any, res) => {
 }));
 
 app.put('/api/account', auth, wrap(async (req: any, res) => {
-  const schema = z.object({ name: z.string().min(2).max(80), email: z.string().email(), currentPassword: z.string().min(8), newPassword: z.string().min(10).max(128).optional().or(z.literal('')) });
-  const parsed = schema.safeParse(req.body);
+  const parsed = accountSchema.safeParse(req.body);
   if (!parsed.success) return res.status(400).json({ ok: false, error: 'Please check the account fields' });
   const { name, email, currentPassword, newPassword } = parsed.data;
   const user = await db.getUser();
@@ -175,8 +174,7 @@ for (const r of resources) {
 
 const contactLimit = rateLimit({ windowMs: 60 * 60_000, limit: 5 });
 app.post('/api/contact', contactLimit, wrap(async (req, res) => {
-  const schema = z.object({ name: z.string().min(2).max(80), email: z.string().email(), subject: z.string().min(2).max(120), message: z.string().min(10).max(3000), website: z.string().max(0).optional() });
-  const p = schema.safeParse(req.body);
+  const p = contactSchema.safeParse(req.body);
   if (!p.success) return res.status(400).json({ ok: false, error: 'Please check all fields' });
   await db.create('messages', { ...p.data, read: false });
   res.status(201).json({ ok: true, message: 'Message received' });
